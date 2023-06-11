@@ -1,6 +1,7 @@
 import { initWebGPU } from "@shared/gpu";
-import vs from "./vertex.wgsl?raw";
+import { triangle } from "@shared/vertex";
 import fs from "./fragment.wgsl?raw";
+import vs from "./vertex.wgsl?raw";
 
 async function main() {
   const canvas = document.querySelector("canvas")!;
@@ -11,14 +12,39 @@ async function main() {
 
   const pipeline = device.createRenderPipeline({
     layout: "auto",
-    vertex: { module: vsModule, entryPoint: "vs" },
+    vertex: {
+      module: vsModule,
+      entryPoint: "vs",
+      buffers: [
+        {
+          arrayStride: 4 * 2,
+          attributes: [{ shaderLocation: 0, format: "float32x2", offset: 0 }],
+        },
+      ],
+    },
     fragment: { module: fsModule, entryPoint: "fs", targets: [{ format }] },
   });
+
+  const { indices, vertices } = triangle;
+
+  const vertexBuffer = device.createBuffer({
+    size: vertices.byteLength,
+    usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
+  });
+
+  const indexBuffer = device.createBuffer({
+    size: indices.byteLength,
+    usage: GPUBufferUsage.INDEX | GPUBufferUsage.COPY_DST,
+  });
+
+  device.queue.writeBuffer(vertexBuffer, 0, vertices);
+  device.queue.writeBuffer(indexBuffer, 0, indices);
 
   const encoder = device.createCommandEncoder();
   const pass = encoder.beginRenderPass({
     colorAttachments: [
       {
+        clearValue: [0.3, 0.3, 0.3, 1],
         view: context.getCurrentTexture().createView(),
         loadOp: "clear",
         storeOp: "store",
@@ -27,7 +53,9 @@ async function main() {
   });
 
   pass.setPipeline(pipeline);
-  pass.draw(3);
+  pass.setVertexBuffer(0, vertexBuffer);
+  pass.setIndexBuffer(indexBuffer, "uint32");
+  pass.drawIndexed(indices.length);
   pass.end();
 
   device.queue.submit([encoder.finish()]);
