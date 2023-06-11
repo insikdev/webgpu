@@ -1,17 +1,25 @@
-import { resolve } from "path";
+import path from "path";
 import { defineConfig } from "vite";
 import fs from "node:fs/promises";
 
 async function generateHTML() {
-  const pages = await fs.readdir("pages");
-  const input = { main: resolve(__dirname, "index.html") };
-  pages.forEach((page) => {
-    input[page] = resolve(__dirname, `pages/${page}/index.html`);
-  });
+  const pages = await fs.readdir("src/pages");
+  const input = { main: path.resolve(__dirname, "src/pages/index.html") };
+  pages
+    .filter((page) => !page.includes("html"))
+    .forEach((page) => {
+      input[page] = path.resolve(__dirname, `src/pages/${page}/index.html`);
+    });
   return input;
 }
 
 export default defineConfig({
   base: "/webgpu/",
-  build: { rollupOptions: { input: await generateHTML() } },
+  root: path.resolve(__dirname, "src/pages"),
+  build: {
+    rollupOptions: { input: await generateHTML() },
+    outDir: path.resolve(__dirname, "dist"),
+    target: "esnext",
+  },
+  resolve: { alias: { "@shared": path.resolve(__dirname, "src/shared") } },
 });
