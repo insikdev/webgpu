@@ -1,15 +1,17 @@
+import fs from "node:fs/promises";
 import path from "path";
 import { defineConfig } from "vite";
-import fs from "node:fs/promises";
 
 async function generateHTML() {
   const pages = await fs.readdir("src/pages");
+
   const input = { main: path.resolve(__dirname, "src/pages/index.html") };
   pages
     .filter((page) => !page.includes("html"))
     .forEach((page) => {
       input[page] = path.resolve(__dirname, `src/pages/${page}/index.html`);
     });
+
   return input;
 }
 

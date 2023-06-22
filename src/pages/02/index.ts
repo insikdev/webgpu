@@ -1,5 +1,5 @@
 import { initWebGPU } from "@shared/gpu";
-import { createTriangle } from "@shared/mesh";
+import { createCircle } from "@shared/mesh";
 import shader from "./shader.wgsl?raw";
 
 function createPipeline(device: GPUDevice, format: GPUTextureFormat) {
@@ -28,7 +28,7 @@ async function render(
   pipeline: GPURenderPipeline,
   context: GPUCanvasContext
 ) {
-  const { indices, vertices } = createTriangle();
+  const { indices, vertices } = createCircle();
 
   const vertexBuffer = device.createBuffer({
     size: vertices.byteLength,
