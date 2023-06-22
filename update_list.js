@@ -1,6 +1,6 @@
 import fs from "node:fs/promises";
 
-async function build() {
+async function updateList() {
   const list = [];
   const pages = await fs.readdir("src/pages");
 
@@ -11,7 +11,9 @@ async function build() {
 
     const html = await fs.readFile(`src/pages/${page}/index.html`, "utf-8");
     const title = html.match(/<h1>(.*?)<\/h1>/)[1];
-    const el = `<li><a href="${page}/index.html">${title}</a></li>`;
+    const el = " "
+      .repeat(6)
+      .concat(`<li><a href="${page}/index.html">${title}</a></li>`);
     list.push(el);
   }
 
@@ -19,10 +21,12 @@ async function build() {
   const mainPage = await fs.readFile(path, "utf-8");
   const updatedHTML = mainPage.replace(
     /<ul>.*?<\/ul>/s,
-    `<ul>${list.join("")}</ul>`
+    `<ul>
+${list.join("\n")}
+    </ul>`
   );
 
   await fs.writeFile(path, updatedHTML);
 }
 
-build();
+updateList();

@@ -5,11 +5,12 @@
   "type": "module",
   "scripts": {
     "dev": "vite --open",
-    "build": "tsc && node build.js && vite build",
+    "build": "tsc && vite build",
     "preview": "vite preview --open"
   },
   "devDependencies": {
     "@webgpu/types": "^0.1.32",
+    "husky": "^8.0.3",
     "typescript": "^5.0.2",
     "vite": "^4.3.9"
   }
