@@ -16,16 +16,12 @@ struct FSInput {
 
 @vertex
 fn vs(input: VSInput) -> FSInput { 
-    var colors = array<vec4f, 3>(
-        vec4f(1.0, 0.0, 0.0, 1.0), 
-        vec4f(0.0, 0.0, 1.0, 1.0),
-        vec4f(0.0, 1.0, 0.0, 1.0), 
-    );
-
+    var colors = array<vec4f, 3>(vec4f(1.0, 0.0, 0.0, 1.0), vec4f(0.0, 1.0, 0.0, 1.0), vec4f(0.0, 0.0, 1.0, 1.0));
+    
     var output: FSInput;
     output.position = modelMatrix[input.instanceIndex].mvp * vec4f(input.position, 0.0, 1.0);
     output.color = colors[input.instanceIndex];
-
+    
     return output;
 }
 
