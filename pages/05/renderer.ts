@@ -24,15 +24,7 @@ export class Renderer extends BaseRenderer {
       vertex: {
         module,
         entryPoint: "vs",
-        buffers: [
-          {
-            arrayStride: 4 * 5,
-            attributes: [
-              { shaderLocation: 0, format: "float32x3", offset: 0 },
-              { shaderLocation: 1, format: "float32x2", offset: 12 },
-            ],
-          },
-        ],
+        buffers: [this.mesh.vertexBufferLayout],
       },
       fragment: {
         module,
@@ -73,6 +65,5 @@ export class Renderer extends BaseRenderer {
     pass.end();
 
     this.device.queue.submit([encoder.finish()]);
-    this.stopRendering();
   }
 }

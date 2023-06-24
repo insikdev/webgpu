@@ -2,7 +2,8 @@ import * as dat from "dat.gui";
 import { GuiVar, Renderer } from "./renderer";
 
 try {
-  const guiVar: GuiVar = { x: 0, y: 0, z: 0 };
+  const guiVar: GuiVar = { cullmode: "back" };
+
   const canvas = document.querySelector("canvas")!;
   const renderer = new Renderer(canvas, guiVar);
   await renderer.initialize();
@@ -11,12 +12,12 @@ try {
   const customContainer = document.getElementById("container")!;
   customContainer.appendChild(gui.domElement);
 
-  const redCircle = gui.addFolder("red circle");
-  redCircle.open();
+  const cube = gui.addFolder("cube");
+  cube
+    .add(guiVar, "cullmode", ["back", "front", "none"])
+    .onChange(renderer.restart);
 
-  redCircle.add(guiVar, "x", -1, 1, 0.1).onChange(renderer.startRendering);
-  redCircle.add(guiVar, "y", -1, 1, 0.1).onChange(renderer.startRendering);
-  redCircle.add(guiVar, "z", 0, 0.9, 0.1).onChange(renderer.startRendering);
+  cube.open();
 
   renderer.startRendering();
 } catch (error) {

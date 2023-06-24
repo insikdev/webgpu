@@ -3,7 +3,7 @@ import { CircleMesh } from "@shared/circle_mesh";
 import { mat4 } from "gl-matrix";
 import shader from "./shader.wgsl?raw";
 
-type GuiVar = {
+export type GuiVar = {
   x: number;
   y: number;
   z: number;

@@ -38,6 +38,12 @@ export abstract class BaseRenderer {
     }
   };
 
+  public restart = async () => {
+    this.startRendering();
+    this.initialize();
+    this.startRendering();
+  };
+
   private renderFrame = (timestamp: number) => {
     const dt = this.calculateDeltaTime(timestamp);
     this.totalTime += dt;

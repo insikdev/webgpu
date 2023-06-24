@@ -35,38 +35,26 @@ export class Renderer extends BaseRenderer {
     const earthMatrix = mat4.create();
     const moonMatrix = mat4.create();
 
-    const scaleMatrix = mat4.create();
-    const rotateMatrix = mat4.create();
-    const translateMatrix = mat4.create();
+    const distanceSunEarth = 0.6;
+    const distanceEarthMoon = 0.2;
 
     {
-      // sun
-      mat4.multiply(sunMatrix, scaleMatrix, sunMatrix);
+      // EARTH : rotate -> translate
+      mat4.rotateZ(earthMatrix, earthMatrix, totalTime);
+      mat4.translate(earthMatrix, earthMatrix, [distanceSunEarth, 0, 0]);
     }
     {
-      // earth
-      mat4.fromZRotation(rotateMatrix, totalTime);
-      mat4.fromTranslation(translateMatrix, [0.6, 0, 0]);
-
-      mat4.multiply(earthMatrix, rotateMatrix, translateMatrix);
-      mat4.multiply(earthMatrix, earthMatrix, scaleMatrix);
-    }
-    {
-      // moon
-      mat4.fromZRotation(rotateMatrix, totalTime * 3);
-      mat4.fromTranslation(translateMatrix, [0.2, 0, 0]);
-
-      mat4.multiply(moonMatrix, rotateMatrix, translateMatrix);
-      mat4.multiply(moonMatrix, moonMatrix, scaleMatrix);
+      // MOON : rotate -> translate -> earth
+      mat4.rotateZ(moonMatrix, moonMatrix, totalTime * 3);
+      mat4.translate(moonMatrix, moonMatrix, [distanceEarthMoon, 0, 0]);
       // 원점에서 달의 움직임 구현 후 원점을 지구로 이동시킨다
       mat4.multiply(moonMatrix, earthMatrix, moonMatrix);
     }
     {
-      mat4.fromScaling(scaleMatrix, [0.25, 0.25, 1]);
-      mat4.multiply(moonMatrix, moonMatrix, scaleMatrix);
-
-      mat4.fromScaling(scaleMatrix, [0.5, 0.5, 1]);
-      mat4.multiply(earthMatrix, earthMatrix, scaleMatrix);
+      // scale
+      mat4.scale(sunMatrix, sunMatrix, [2, 2, 1]);
+      mat4.scale(earthMatrix, earthMatrix, [0.5, 0.5, 1]);
+      mat4.scale(moonMatrix, moonMatrix, [0.25, 0.25, 1]);
     }
 
     const uniformBuffer = this.device.createBuffer({
