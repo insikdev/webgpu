@@ -9,7 +9,7 @@ async function updateList() {
     const title = html.match(/<h1>(.*?)<\/h1>/)[1];
     const el = " "
       .repeat(6)
-      .concat(`<li><a href="/pages/${page}/index.html">${title}</a></li>`);
+      .concat(`<li><a href="pages/${page}/index.html">${title}</a></li>`);
     list.push(el);
   }
 

@@ -14,6 +14,7 @@ async function createInputOptions() {
 }
 
 export default defineConfig({
+  base: "/webgpu/",
   build: {
     rollupOptions: { input: await createInputOptions() },
     target: "esnext",
