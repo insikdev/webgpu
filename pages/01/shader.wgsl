@@ -1,5 +1,5 @@
 struct VSInput {
-    @location(0) position: vec2f,
+    @location(0) position: vec3f,
     @builtin(vertex_index) index: u32,
 }
 
@@ -10,10 +10,14 @@ struct FSInput {
 
 @vertex
 fn vs(input: VSInput) -> FSInput { 
-    var colors = array<vec4f, 3>(vec4f(1.0, 0.0, 0.0, 1.0), vec4f(0.0, 1.0, 0.0, 1.0), vec4f(0.0, 0.0, 1.0, 1.0));
+    var colors = array<vec4f, 3>(
+        vec4f(1.0, 0.0, 0.0, 1.0),
+        vec4f(0.0, 1.0, 0.0, 1.0),
+        vec4f(0.0, 0.0, 1.0, 1.0),
+    );
 
     var output: FSInput;
-    output.position = vec4f(input.position, 0.0, 1.0);
+    output.position = vec4f(input.position, 1.0);
     output.color = colors[input.index];
     
     return output;

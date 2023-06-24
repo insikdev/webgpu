@@ -1,5 +1,5 @@
 import { BaseRenderer } from "@shared/base_renderer";
-import { createCircle } from "@shared/mesh";
+import { CircleMesh } from "@shared/circle_mesh";
 import { mat4 } from "gl-matrix";
 import shader from "./shader.wgsl?raw";
 
@@ -14,6 +14,10 @@ export class Renderer extends BaseRenderer {
     super(canvas);
   }
 
+  protected override initAssets(): void {
+    this.mesh = new CircleMesh(this.device, 0.05);
+  }
+
   protected createRenderPipeline() {
     const module = this.device.createShaderModule({ code: shader });
 
@@ -22,12 +26,7 @@ export class Renderer extends BaseRenderer {
       vertex: {
         module,
         entryPoint: "vs",
-        buffers: [
-          {
-            arrayStride: 4 * 2,
-            attributes: [{ shaderLocation: 0, format: "float32x2", offset: 0 }],
-          },
-        ],
+        buffers: [this.mesh.vertexBufferLayout],
       },
       fragment: {
         module,
@@ -43,18 +42,10 @@ export class Renderer extends BaseRenderer {
   }
 
   protected override render() {
-    const { indices, vertices } = createCircle(0.05);
-    const vertexBuffer = this.device.createBuffer({
-      size: vertices.byteLength,
-      usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
-    });
-    this.device.queue.writeBuffer(vertexBuffer, 0, vertices);
-
-    const indexBuffer = this.device.createBuffer({
-      size: indices.byteLength,
-      usage: GPUBufferUsage.INDEX | GPUBufferUsage.COPY_DST,
-    });
-    this.device.queue.writeBuffer(indexBuffer, 0, indices);
+    const viewMatrix = mat4.create();
+    const perspectiveMatrix = mat4.create();
+    mat4.lookAt(viewMatrix, [0, 0, -2], [0, 0, 0], [0, 1, 0]);
+    mat4.perspective(perspectiveMatrix, Math.PI * 0.3, 1, 0.001, 10);
 
     const transform1 = mat4.create();
     const scale1 = mat4.fromScaling(mat4.create(), [5, 5, 1]);
@@ -65,10 +56,15 @@ export class Renderer extends BaseRenderer {
     ]);
     mat4.multiply(transform1, translate1, scale1);
 
+    mat4.multiply(transform1, viewMatrix, transform1);
+    mat4.multiply(transform1, perspectiveMatrix, transform1);
+
     const transform2 = mat4.create();
     const scale2 = mat4.fromScaling(mat4.create(), [7, 7, 1]);
     const translate2 = mat4.fromTranslation(mat4.create(), [0.25, 0.25, 0.5]);
     mat4.multiply(transform2, translate2, scale2);
+    mat4.multiply(transform2, viewMatrix, transform2);
+    mat4.multiply(transform2, perspectiveMatrix, transform2);
 
     const transform3 = mat4.create();
     const scale3 = mat4.fromScaling(mat4.create(), [9, 9, 1]);
@@ -77,6 +73,8 @@ export class Renderer extends BaseRenderer {
       [-0.25, -0.25, 0.75]
     );
     mat4.multiply(transform3, translate3, scale3);
+    mat4.multiply(transform3, viewMatrix, transform3);
+    mat4.multiply(transform3, perspectiveMatrix, transform3);
 
     const uniformBuffer = this.device.createBuffer({
       size: 64 * 3,
@@ -105,7 +103,7 @@ export class Renderer extends BaseRenderer {
           .createTexture({
             format: "depth24plus",
             usage: GPUTextureUsage.RENDER_ATTACHMENT,
-            size: [720, 720, 1],
+            size: [this.canvas.width, this.canvas.height, 1],
           })
           .createView(),
         depthClearValue: 1.0,
@@ -120,10 +118,10 @@ export class Renderer extends BaseRenderer {
     });
 
     pass.setPipeline(this.pipeline);
-    pass.setVertexBuffer(0, vertexBuffer);
-    pass.setIndexBuffer(indexBuffer, "uint32");
+    pass.setVertexBuffer(0, this.mesh.vertexBuffer);
+    pass.setIndexBuffer(this.mesh.indexBuffer, "uint32");
     pass.setBindGroup(0, bindGroup);
-    pass.drawIndexed(indices.length, 3);
+    pass.drawIndexed(this.mesh.indices.length, 3);
 
     pass.end();
 

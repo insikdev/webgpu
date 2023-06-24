@@ -1,10 +1,19 @@
 import { BaseRenderer } from "@shared/base_renderer";
-import { createTriangle } from "@shared/mesh";
+import { Texture } from "@shared/texture";
+import { TriangleMesh } from "@shared/triangle_mesh";
 import shader from "./shader.wgsl?raw";
+import imgUrl from "/sample.jpg";
 
 export class Renderer extends BaseRenderer {
   constructor(canvas: HTMLCanvasElement) {
     super(canvas);
+  }
+
+  protected override async initAssets(): Promise<void> {
+    this.mesh = new TriangleMesh(this.device);
+
+    this.texture = new Texture(this.device);
+    await this.texture.loadImage(imgUrl);
   }
 
   protected override createRenderPipeline() {
@@ -17,8 +26,11 @@ export class Renderer extends BaseRenderer {
         entryPoint: "vs",
         buffers: [
           {
-            arrayStride: 4 * 2,
-            attributes: [{ shaderLocation: 0, format: "float32x2", offset: 0 }],
+            arrayStride: 4 * 5,
+            attributes: [
+              { shaderLocation: 0, format: "float32x3", offset: 0 },
+              { shaderLocation: 1, format: "float32x2", offset: 12 },
+            ],
           },
         ],
       },
@@ -30,21 +42,14 @@ export class Renderer extends BaseRenderer {
     });
   }
 
-  protected override render() {
-    const { indices, vertices } = createTriangle();
-
-    const vertexBuffer = this.device.createBuffer({
-      size: vertices.byteLength,
-      usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
+  protected override async render() {
+    const bindGroup = this.device.createBindGroup({
+      layout: this.pipeline.getBindGroupLayout(0),
+      entries: [
+        { binding: 0, resource: this.texture!.sampler },
+        { binding: 1, resource: this.texture!.view },
+      ],
     });
-
-    const indexBuffer = this.device.createBuffer({
-      size: indices.byteLength,
-      usage: GPUBufferUsage.INDEX | GPUBufferUsage.COPY_DST,
-    });
-
-    this.device.queue.writeBuffer(vertexBuffer, 0, vertices);
-    this.device.queue.writeBuffer(indexBuffer, 0, indices);
 
     const encoder = this.device.createCommandEncoder();
     const pass = encoder.beginRenderPass({
@@ -59,11 +64,15 @@ export class Renderer extends BaseRenderer {
     });
 
     pass.setPipeline(this.pipeline);
-    pass.setVertexBuffer(0, vertexBuffer);
-    pass.setIndexBuffer(indexBuffer, "uint32");
-    pass.drawIndexed(indices.length);
+    pass.setVertexBuffer(0, this.mesh.vertexBuffer);
+    pass.setIndexBuffer(this.mesh.indexBuffer, "uint32");
+    pass.setBindGroup(0, bindGroup);
+
+    pass.drawIndexed(this.mesh.indices.length);
+
     pass.end();
 
     this.device.queue.submit([encoder.finish()]);
+    this.stopRendering();
   }
 }

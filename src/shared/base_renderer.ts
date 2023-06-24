@@ -1,3 +1,6 @@
+import { BaseMesh } from "./base_mesh";
+import { Texture } from "./texture";
+
 export abstract class BaseRenderer {
   protected device!: GPUDevice;
   protected context!: GPUCanvasContext;
@@ -7,13 +10,18 @@ export abstract class BaseRenderer {
   private lastFrameTimestamp?: number;
   private totalTime: number = 0;
 
-  constructor(private readonly canvas: HTMLCanvasElement) {}
+  protected mesh!: BaseMesh;
+  protected texture?: Texture;
 
+  constructor(protected readonly canvas: HTMLCanvasElement) {}
+
+  protected abstract initAssets(): Promise<void> | void;
   protected abstract createRenderPipeline(): void;
   protected abstract render(dt: number, totalTime: number): void;
 
   public async initialize() {
     await this.initWebGPU();
+    await this.initAssets();
     this.createRenderPipeline();
   }
 
