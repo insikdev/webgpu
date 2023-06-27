@@ -1,11 +1,15 @@
 import * as dat from "dat.gui";
 import { GuiVar, Renderer } from "./renderer";
 
-try {
+async function main() {
   const guiVar: GuiVar = { x: 0, y: 0, z: 0 };
   const canvas = document.querySelector("canvas")!;
-  const renderer = new Renderer(canvas, guiVar);
-  await renderer.initialize();
+  const renderer = await Renderer.create(canvas, guiVar);
+  if (!renderer) {
+    const h1 = document.querySelector("h1")!;
+    h1.innerText = "WebGPU Not Support";
+    return;
+  }
 
   const gui = new dat.GUI({ autoPlace: false });
   const customContainer = document.getElementById("container")!;
@@ -19,7 +23,6 @@ try {
   redCircle.add(guiVar, "z", 0, 0.9, 0.1).onChange(renderer.startRendering);
 
   renderer.startRendering();
-} catch (error) {
-  const h1 = document.querySelector("h1")!;
-  h1.innerText = error as string;
 }
+
+main();

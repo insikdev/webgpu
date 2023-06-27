@@ -3,8 +3,16 @@ import { CircleMesh } from "@shared/circle_mesh";
 import shader from "./shader.wgsl?raw";
 
 export class Renderer extends BaseRenderer {
-  constructor(canvas: HTMLCanvasElement) {
+  private constructor(canvas: HTMLCanvasElement) {
     super(canvas);
+  }
+
+  public static async create(canvas: HTMLCanvasElement) {
+    const renderer = new Renderer(canvas);
+    if (!(await renderer.initializeWebGPU())) {
+      return null;
+    }
+    return renderer;
   }
 
   protected override initAssets(): void {

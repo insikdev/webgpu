@@ -1,12 +1,15 @@
 import { Renderer } from "./renderer";
 
-try {
+async function main() {
   const canvas = document.querySelector("canvas")!;
-  const renderer = new Renderer(canvas);
-  await renderer.initialize();
+  const renderer = await Renderer.create(canvas);
+  if (!renderer) {
+    const h1 = document.querySelector("h1")!;
+    h1.innerText = "WebGPU Not Support";
+    return;
+  }
 
   renderer.startRendering();
-} catch (error) {
-  const h1 = document.querySelector("h1")!;
-  h1.innerText = error as string;
 }
+
+main();

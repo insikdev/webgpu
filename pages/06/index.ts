@@ -1,26 +1,27 @@
 import * as dat from "dat.gui";
 import { GuiVar, Renderer } from "./renderer";
 
-try {
-  const guiVar: GuiVar = { cullmode: "back" };
+async function main() {
+  const guiVar: GuiVar = { cullMode: "back" };
+  const modes: GPUCullMode[] = ["back", "front", "none"];
 
   const canvas = document.querySelector("canvas")!;
-  const renderer = new Renderer(canvas, guiVar);
-  await renderer.initialize();
+  const renderer = await Renderer.create(canvas, guiVar);
+  if (!renderer) {
+    const h1 = document.querySelector("h1")!;
+    h1.innerText = "WebGPU Not Support";
+    return;
+  }
 
   const gui = new dat.GUI({ autoPlace: false });
   const customContainer = document.getElementById("container")!;
   customContainer.appendChild(gui.domElement);
 
   const cube = gui.addFolder("cube");
-  cube
-    .add(guiVar, "cullmode", ["back", "front", "none"])
-    .onChange(renderer.restart);
-
   cube.open();
+  cube.add(guiVar, "cullMode", modes).onChange(renderer.restart);
 
   renderer.startRendering();
-} catch (error) {
-  const h1 = document.querySelector("h1")!;
-  h1.innerText = error as string;
 }
+
+main();

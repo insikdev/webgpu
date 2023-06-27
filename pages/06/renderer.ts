@@ -3,11 +3,19 @@ import { CubeMesh } from "@shared/cube_mesh";
 import { mat4 } from "gl-matrix";
 import shader from "./shader.wgsl?raw";
 
-export type GuiVar = { cullmode: GPUCullMode };
+export type GuiVar = Pick<Required<GPUPrimitiveState>, "cullMode">;
 
 export class Renderer extends BaseRenderer {
-  constructor(canvas: HTMLCanvasElement, public guiVar: GuiVar) {
+  private constructor(canvas: HTMLCanvasElement, private guiVar: GuiVar) {
     super(canvas);
+  }
+
+  public static async create(canvas: HTMLCanvasElement, guiVar: GuiVar) {
+    const renderer = new Renderer(canvas, guiVar);
+    if (!(await renderer.initializeWebGPU())) {
+      return null;
+    }
+    return renderer;
   }
 
   protected override initAssets() {
@@ -29,20 +37,20 @@ export class Renderer extends BaseRenderer {
         entryPoint: "fs",
         targets: [{ format: this.format }],
       },
-      primitive: { cullMode: this.guiVar.cullmode, frontFace: "cw" },
+      primitive: { cullMode: this.guiVar.cullMode, frontFace: "cw" },
     });
   }
 
-  protected override async render(_: number, totalTime: number) {
+  protected override async render() {
     const mvpMatrix = mat4.create();
 
     const modelMatrix = mat4.create();
     const viewMatrix = mat4.create();
     const projectionMatrix = mat4.create();
 
-    mat4.rotateX(modelMatrix, modelMatrix, totalTime);
-    mat4.rotateY(modelMatrix, modelMatrix, totalTime);
-    mat4.rotateZ(modelMatrix, modelMatrix, totalTime);
+    mat4.rotateX(modelMatrix, modelMatrix, this.time);
+    mat4.rotateY(modelMatrix, modelMatrix, this.time);
+    mat4.rotateZ(modelMatrix, modelMatrix, this.time);
     mat4.scale(modelMatrix, modelMatrix, [0.5, 0.5, 0.5]);
 
     mat4.lookAt(viewMatrix, [0, 0, 2], [0, 0, 0], [0, 1, 0]);

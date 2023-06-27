@@ -14,6 +14,7 @@ export class Texture {
 
   private createTexture(imageData: ImageBitmap) {
     const size = { width: imageData.width, height: imageData.height };
+
     this.texture = this.device.createTexture({
       size,
       format: "rgba8unorm",
@@ -22,6 +23,7 @@ export class Texture {
         GPUTextureUsage.COPY_DST |
         GPUTextureUsage.RENDER_ATTACHMENT,
     });
+
     this.view = this.texture.createView({
       format: "rgba8unorm",
       dimension: "2d",
@@ -31,6 +33,7 @@ export class Texture {
       baseArrayLayer: 0,
       arrayLayerCount: 1,
     });
+
     this.sampler = this.device.createSampler({
       addressModeU: "repeat",
       addressModeV: "repeat",

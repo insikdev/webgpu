@@ -4,8 +4,16 @@ import { mat4 } from "gl-matrix";
 import shader from "./shader.wgsl?raw";
 
 export class Renderer extends BaseRenderer {
-  constructor(canvas: HTMLCanvasElement) {
+  private constructor(canvas: HTMLCanvasElement) {
     super(canvas);
+  }
+
+  public static async create(canvas: HTMLCanvasElement) {
+    const renderer = new Renderer(canvas);
+    if (!(await renderer.initializeWebGPU())) {
+      return null;
+    }
+    return renderer;
   }
 
   protected initAssets(): void {
@@ -30,7 +38,7 @@ export class Renderer extends BaseRenderer {
     });
   }
 
-  protected override render(_: number, totalTime: number) {
+  protected override render() {
     const sunMatrix = mat4.create();
     const earthMatrix = mat4.create();
     const moonMatrix = mat4.create();
@@ -40,12 +48,12 @@ export class Renderer extends BaseRenderer {
 
     {
       // EARTH : rotate -> translate
-      mat4.rotateZ(earthMatrix, earthMatrix, totalTime);
+      mat4.rotateZ(earthMatrix, earthMatrix, this.time);
       mat4.translate(earthMatrix, earthMatrix, [distanceSunEarth, 0, 0]);
     }
     {
       // MOON : rotate -> translate -> earth
-      mat4.rotateZ(moonMatrix, moonMatrix, totalTime * 3);
+      mat4.rotateZ(moonMatrix, moonMatrix, this.time * 3);
       mat4.translate(moonMatrix, moonMatrix, [distanceEarthMoon, 0, 0]);
       // 원점에서 달의 움직임 구현 후 원점을 지구로 이동시킨다
       mat4.multiply(moonMatrix, earthMatrix, moonMatrix);

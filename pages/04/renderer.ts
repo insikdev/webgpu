@@ -10,8 +10,16 @@ export type GuiVar = {
 };
 
 export class Renderer extends BaseRenderer {
-  constructor(canvas: HTMLCanvasElement, public guiVar: GuiVar) {
+  private constructor(canvas: HTMLCanvasElement, private guiVar: GuiVar) {
     super(canvas);
+  }
+
+  public static async create(canvas: HTMLCanvasElement, guiVar: GuiVar) {
+    const renderer = new Renderer(canvas, guiVar);
+    if (!(await renderer.initializeWebGPU())) {
+      return null;
+    }
+    return renderer;
   }
 
   protected override initAssets(): void {
@@ -44,11 +52,11 @@ export class Renderer extends BaseRenderer {
   protected override render() {
     const viewMatrix = mat4.create();
     const perspectiveMatrix = mat4.create();
-    mat4.lookAt(viewMatrix, [0, 0, -2], [0, 0, 0], [0, 1, 0]);
+    mat4.lookAt(viewMatrix, [0, 0, 3], [0, 0, 0], [0, 1, 0]);
     mat4.perspective(perspectiveMatrix, Math.PI * 0.3, 1, 0.001, 10);
 
     const transform1 = mat4.create();
-    const scale1 = mat4.fromScaling(mat4.create(), [5, 5, 1]);
+    const scale1 = mat4.fromScaling(mat4.create(), [7, 7, 1]);
     const translate1 = mat4.fromTranslation(mat4.create(), [
       this.guiVar.x,
       this.guiVar.y,

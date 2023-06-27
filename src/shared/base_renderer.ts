@@ -1,29 +1,9 @@
-import { BaseMesh } from "./base_mesh";
-import { Texture } from "./texture";
+import { WebGPUManager } from "./webgpu_manger";
 
-export abstract class BaseRenderer {
-  protected device!: GPUDevice;
-  protected context!: GPUCanvasContext;
-  protected format!: GPUTextureFormat;
-  protected pipeline!: GPURenderPipeline;
+export abstract class BaseRenderer extends WebGPUManager {
+  protected time: number = 0;
   private animationFrameId?: number;
   private lastFrameTimestamp?: number;
-  private totalTime: number = 0;
-
-  protected mesh!: BaseMesh;
-  protected texture?: Texture;
-
-  constructor(protected readonly canvas: HTMLCanvasElement) {}
-
-  protected abstract initAssets(): Promise<void> | void;
-  protected abstract createRenderPipeline(): void;
-  protected abstract render(dt: number, totalTime: number): void;
-
-  public async initialize() {
-    await this.initWebGPU();
-    await this.initAssets();
-    this.createRenderPipeline();
-  }
 
   public startRendering = () => {
     if (!this.animationFrameId) {
@@ -39,15 +19,14 @@ export abstract class BaseRenderer {
   };
 
   public restart = async () => {
-    this.startRendering();
-    this.initialize();
+    this.stopRendering();
+    await this.initializeWebGPU();
     this.startRendering();
   };
 
   private renderFrame = (timestamp: number) => {
-    const dt = this.calculateDeltaTime(timestamp);
-    this.totalTime += dt;
-    this.render(dt, this.totalTime);
+    this.time += this.calculateDeltaTime(timestamp);
+    this.render();
 
     if (this.animationFrameId) {
       this.animationFrameId = requestAnimationFrame(this.renderFrame);
@@ -59,21 +38,5 @@ export abstract class BaseRenderer {
     const dt = (currentTimestamp - lastTimestamp) / 1000;
     this.lastFrameTimestamp = currentTimestamp;
     return dt;
-  }
-
-  protected async initWebGPU() {
-    const adapter = await navigator.gpu.requestAdapter();
-    const device = await adapter?.requestDevice();
-    const context = this.canvas.getContext("webgpu")!;
-    const format = navigator.gpu.getPreferredCanvasFormat();
-
-    if (!adapter || !device || !context) {
-      throw Error("WebGPU not supported.");
-    }
-
-    context.configure({ device, format });
-    this.device = device;
-    this.context = context;
-    this.format = format;
   }
 }
