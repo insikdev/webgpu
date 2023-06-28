@@ -65,15 +65,16 @@ export class Renderer extends BaseRenderer {
       mat4.scale(moonMatrix, moonMatrix, [0.25, 0.25, 1]);
     }
 
-    const uniformBuffer = this.device.createBuffer({
-      size: 64 * 3,
-      usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
-    });
-
     const uniformBufferData = new Float32Array(4 * 4 * 3);
+
     uniformBufferData.set(sunMatrix, 0);
     uniformBufferData.set(earthMatrix, 4 * 4);
     uniformBufferData.set(moonMatrix, 4 * 4 * 2);
+
+    const uniformBuffer = this.device.createBuffer({
+      size: uniformBufferData.byteLength,
+      usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
+    });
 
     this.device.queue.writeBuffer(uniformBuffer, 0, uniformBufferData);
 

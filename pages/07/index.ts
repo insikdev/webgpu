@@ -2,7 +2,8 @@ import * as dat from "dat.gui";
 import { GuiVar, Renderer } from "./renderer";
 
 async function main() {
-  const guiVar: GuiVar = { pos: { x: 0, y: 0, z: 0 } };
+  const guiVar: GuiVar = { camera: { x: 0, y: 0, z: 3 } };
+
   const canvas = document.querySelector("canvas")!;
   const renderer = await Renderer.create(canvas, guiVar);
   if (!renderer) {
@@ -15,12 +16,15 @@ async function main() {
   const customContainer = document.getElementById("container")!;
   customContainer.appendChild(gui.domElement);
 
-  const redCircle = gui.addFolder("red circle");
-  redCircle.open();
+  const camera = gui.addFolder("camera");
 
-  redCircle.add(guiVar.pos, "x", -1, 1, 0.1).onChange(renderer.startRendering);
-  redCircle.add(guiVar.pos, "y", -1, 1, 0.1).onChange(renderer.startRendering);
-  redCircle.add(guiVar.pos, "z", 0, 0.9, 0.1).onChange(renderer.startRendering);
+  camera.open();
+
+  camera.add(guiVar.camera, "x", -5, 5, 0.1).onChange(renderer.startRendering);
+  camera.add(guiVar.camera, "y", -5, 5, 0.1).onChange(renderer.startRendering);
+  camera
+    .add(guiVar.camera, "z", -10, 10, 0.1)
+    .onChange(renderer.startRendering);
 
   renderer.startRendering();
 }

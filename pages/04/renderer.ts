@@ -3,11 +3,7 @@ import { CircleMesh } from "@shared/circle_mesh";
 import { mat4 } from "gl-matrix";
 import shader from "./shader.wgsl?raw";
 
-export type GuiVar = {
-  x: number;
-  y: number;
-  z: number;
-};
+export type GuiVar = { pos: XYZ };
 
 export class Renderer extends BaseRenderer {
   private constructor(canvas: HTMLCanvasElement, private guiVar: GuiVar) {
@@ -58,9 +54,9 @@ export class Renderer extends BaseRenderer {
     const transform1 = mat4.create();
     const scale1 = mat4.fromScaling(mat4.create(), [7, 7, 1]);
     const translate1 = mat4.fromTranslation(mat4.create(), [
-      this.guiVar.x,
-      this.guiVar.y,
-      this.guiVar.z,
+      this.guiVar.pos.x,
+      this.guiVar.pos.y,
+      this.guiVar.pos.z,
     ]);
     mat4.multiply(transform1, translate1, scale1);
 
