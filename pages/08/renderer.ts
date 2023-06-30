@@ -8,7 +8,7 @@ import shader from "./shader.wgsl?raw";
 export type GuiVar = { light: { pos: XYZ }; camera: XYZ };
 
 export class Renderer extends AnimationRenderer {
-  private lightPipeline: GPURenderPipeline;
+  private lightPipeline!: GPURenderPipeline;
   private readonly numCubes = 5;
   private randomTranslateArray: mat4[];
 

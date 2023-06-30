@@ -8,6 +8,7 @@ import shader from "./shader.wgsl?raw";
 export class Renderer extends AnimationRenderer {
   private readonly numCubes = 500;
   private randomTranslateArray: mat4[];
+  private depthTexture!: GPUTexture;
 
   private constructor(canvas: HTMLCanvasElement, public camera: Camera) {
     super(canvas);
@@ -41,7 +42,18 @@ export class Renderer extends AnimationRenderer {
         entryPoint: "fs",
         targets: [{ format: this.format }]
       },
-      primitive: { cullMode: "back", frontFace: "cw" }
+      primitive: { cullMode: "back", frontFace: "cw" },
+      depthStencil: {
+        format: "depth24plus",
+        depthWriteEnabled: true,
+        depthCompare: "less-equal"
+      }
+    });
+
+    this.depthTexture = this.device.createTexture({
+      format: "depth24plus",
+      usage: GPUTextureUsage.RENDER_ATTACHMENT,
+      size: [this.canvas.width, this.canvas.height, 1]
     });
   }
 
@@ -50,7 +62,7 @@ export class Renderer extends AnimationRenderer {
 
     const mvpBuffer = this.device.createBuffer({
       size: mvpMatrixData.byteLength,
-      usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
+      usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST
     });
 
     for (let i = 0; i < this.numCubes; i++) {
@@ -82,7 +94,13 @@ export class Renderer extends AnimationRenderer {
           loadOp: "clear",
           storeOp: "store"
         }
-      ]
+      ],
+      depthStencilAttachment: {
+        view: this.depthTexture.createView({ aspect: "depth-only" }),
+        depthClearValue: 1.0,
+        depthLoadOp: "clear",
+        depthStoreOp: "store"
+      }
     });
 
     pass.setPipeline(this.pipeline);
@@ -101,7 +119,7 @@ export class Renderer extends AnimationRenderer {
 
     for (let i = 0; i < this.numCubes; i++) {
       const modelMatrix = mat4.create();
-      mat4.translate(modelMatrix, modelMatrix, [random(-4, 4), random(-4, 4), random(-4, 4)]);
+      mat4.translate(modelMatrix, modelMatrix, [random(-5, 5), random(-5, 5), random(-5, 5)]);
       result.push(modelMatrix);
     }
 

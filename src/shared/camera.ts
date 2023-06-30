@@ -2,7 +2,7 @@ import { glMatrix, mat4, vec3 } from "gl-matrix";
 import { Direction } from "./enum";
 
 export class Camera {
-  private static readonly keyboardSensitivity = 0.1;
+  private static readonly keyboardSensitivity = 0.5;
   private static readonly mouseSensitivity = 0.1;
   private static readonly fov = Math.PI / 2;
   private static readonly up = vec3.fromValues(0, 1, 0);

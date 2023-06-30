@@ -6,6 +6,8 @@ import shader from "./shader.wgsl?raw";
 export type GuiVar = { pos: XYZ };
 
 export class Renderer extends AnimationRenderer {
+  private depthTexture!: GPUTexture;
+
   private constructor(canvas: HTMLCanvasElement, private guiVar: GuiVar) {
     super(canvas);
   }
@@ -42,6 +44,12 @@ export class Renderer extends AnimationRenderer {
         depthWriteEnabled: true,
         depthCompare: "less"
       }
+    });
+
+    this.depthTexture = this.device.createTexture({
+      format: "depth24plus",
+      usage: GPUTextureUsage.RENDER_ATTACHMENT,
+      size: [this.canvas.width, this.canvas.height, 1]
     });
   }
 
@@ -96,13 +104,7 @@ export class Renderer extends AnimationRenderer {
         }
       ],
       depthStencilAttachment: {
-        view: this.device
-          .createTexture({
-            format: "depth24plus",
-            usage: GPUTextureUsage.RENDER_ATTACHMENT,
-            size: [this.canvas.width, this.canvas.height, 1]
-          })
-          .createView(),
+        view: this.depthTexture.createView(),
         depthClearValue: 1.0,
         depthLoadOp: "clear",
         depthStoreOp: "store"

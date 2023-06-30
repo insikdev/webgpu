@@ -1,7 +1,3 @@
-struct Uniforms {
-    mvp: mat4x4<f32>,
-};
-
 struct VSInput {
     @location(0) position: vec2f,
     @builtin(instance_index) instanceIndex: u32,
@@ -12,7 +8,7 @@ struct FSInput {
     @location(0) color: vec4f,
 }
 
-@group(0) @binding(0) var<storage, read> modelMatrix: array<Uniforms>;
+@group(0) @binding(0) var<storage, read> transformMatrices: array<mat4x4f>;
 
 @vertex
 fn vs(input: VSInput) -> FSInput { 
@@ -23,7 +19,7 @@ fn vs(input: VSInput) -> FSInput {
     );
 
     var output: FSInput;
-    output.position = modelMatrix[input.instanceIndex].mvp * vec4f(input.position, 0.0, 1.0);
+    output.position = transformMatrices[input.instanceIndex] * vec4f(input.position, 0.0, 1.0);
     output.color = colors[input.instanceIndex];
 
     return output;

@@ -8,7 +8,7 @@ struct FSInput {
     @location(0) color: vec4f,
 }
 
-@group(0) @binding(0) var<uniform> mvpMatrices: array<mat4x4f, 500>;
+@group(0) @binding(0) var<storage, read> mvpMatrices: array<mat4x4f>;
 
 @vertex
 fn vs(input: VSInput) -> FSInput { 

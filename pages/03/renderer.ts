@@ -65,18 +65,18 @@ export class Renderer extends AnimationRenderer {
       mat4.scale(moonMatrix, moonMatrix, [0.25, 0.25, 1]);
     }
 
-    const uniformBufferData = new Float32Array(4 * 4 * 3);
+    const transformData = new Float32Array(4 * 4 * 3);
 
-    uniformBufferData.set(sunMatrix, 0);
-    uniformBufferData.set(earthMatrix, 4 * 4);
-    uniformBufferData.set(moonMatrix, 4 * 4 * 2);
+    transformData.set(sunMatrix, 0);
+    transformData.set(earthMatrix, 4 * 4);
+    transformData.set(moonMatrix, 4 * 4 * 2);
 
-    const uniformBuffer = this.device.createBuffer({
-      size: uniformBufferData.byteLength,
+    const storageBuffer = this.device.createBuffer({
+      size: transformData.byteLength,
       usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST
     });
 
-    this.device.queue.writeBuffer(uniformBuffer, 0, uniformBufferData);
+    this.device.queue.writeBuffer(storageBuffer, 0, transformData);
 
     const encoder = this.device.createCommandEncoder();
     const pass = encoder.beginRenderPass({
@@ -92,7 +92,7 @@ export class Renderer extends AnimationRenderer {
 
     const bindGroup = this.device.createBindGroup({
       layout: this.pipeline.getBindGroupLayout(0),
-      entries: [{ binding: 0, resource: { buffer: uniformBuffer } }]
+      entries: [{ binding: 0, resource: { buffer: storageBuffer } }]
     });
 
     pass.setPipeline(this.pipeline);
