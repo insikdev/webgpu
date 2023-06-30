@@ -1,9 +1,9 @@
-import { BaseRenderer } from "@shared/base_renderer";
-import { CircleMesh } from "@shared/circle_mesh";
+import { Circle } from "@mesh/circle";
+import { AnimationRenderer } from "@shared/animation_renderer";
 import { mat4 } from "gl-matrix";
 import shader from "./shader.wgsl?raw";
 
-export class Renderer extends BaseRenderer {
+export class Renderer extends AnimationRenderer {
   private constructor(canvas: HTMLCanvasElement) {
     super(canvas);
   }
@@ -17,7 +17,7 @@ export class Renderer extends BaseRenderer {
   }
 
   protected initAssets(): void {
-    this.mesh = new CircleMesh(this.device, 0.125);
+    this.mesh = new Circle(this.device, 0.125);
   }
 
   protected override createRenderPipeline() {
@@ -28,13 +28,13 @@ export class Renderer extends BaseRenderer {
       vertex: {
         module,
         entryPoint: "vs",
-        buffers: [this.mesh.vertexBufferLayout],
+        buffers: [this.mesh.vertexBufferLayout]
       },
       fragment: {
         module,
         entryPoint: "fs",
-        targets: [{ format: this.format }],
-      },
+        targets: [{ format: this.format }]
+      }
     });
   }
 
@@ -73,7 +73,7 @@ export class Renderer extends BaseRenderer {
 
     const uniformBuffer = this.device.createBuffer({
       size: uniformBufferData.byteLength,
-      usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
+      usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST
     });
 
     this.device.queue.writeBuffer(uniformBuffer, 0, uniformBufferData);
@@ -85,14 +85,14 @@ export class Renderer extends BaseRenderer {
           clearValue: [0.3, 0.3, 0.3, 1],
           view: this.context.getCurrentTexture().createView(),
           loadOp: "clear",
-          storeOp: "store",
-        },
-      ],
+          storeOp: "store"
+        }
+      ]
     });
 
     const bindGroup = this.device.createBindGroup({
       layout: this.pipeline.getBindGroupLayout(0),
-      entries: [{ binding: 0, resource: { buffer: uniformBuffer } }],
+      entries: [{ binding: 0, resource: { buffer: uniformBuffer } }]
     });
 
     pass.setPipeline(this.pipeline);

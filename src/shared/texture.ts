@@ -6,9 +6,7 @@ export class Texture {
   constructor(private device: GPUDevice) {}
 
   public async loadImage(url: string) {
-    const imageBitmap = await createImageBitmap(
-      await (await fetch(url)).blob()
-    );
+    const imageBitmap = await createImageBitmap(await (await fetch(url)).blob());
     this.createTexture(imageBitmap);
   }
 
@@ -18,10 +16,7 @@ export class Texture {
     this.texture = this.device.createTexture({
       size,
       format: "rgba8unorm",
-      usage:
-        GPUTextureUsage.TEXTURE_BINDING |
-        GPUTextureUsage.COPY_DST |
-        GPUTextureUsage.RENDER_ATTACHMENT,
+      usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST | GPUTextureUsage.RENDER_ATTACHMENT
     });
 
     this.view = this.texture.createView({
@@ -31,7 +26,7 @@ export class Texture {
       baseMipLevel: 0,
       mipLevelCount: 1,
       baseArrayLayer: 0,
-      arrayLayerCount: 1,
+      arrayLayerCount: 1
     });
 
     this.sampler = this.device.createSampler({
@@ -39,13 +34,9 @@ export class Texture {
       addressModeV: "repeat",
       addressModeW: "repeat",
       magFilter: "linear",
-      minFilter: "linear",
+      minFilter: "linear"
     });
 
-    this.device.queue.copyExternalImageToTexture(
-      { source: imageData },
-      { texture: this.texture },
-      size
-    );
+    this.device.queue.copyExternalImageToTexture({ source: imageData }, { texture: this.texture }, size);
   }
 }

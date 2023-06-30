@@ -1,4 +1,4 @@
-import { BaseMesh } from "./base_mesh";
+import { BaseMesh } from "../mesh/base_mesh";
 import { Texture } from "./texture";
 
 export abstract class WebGPUManager {

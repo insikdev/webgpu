@@ -7,11 +7,7 @@ async function updateList() {
   for (const page of pages) {
     const html = await fs.readFile(`pages/${page}/index.html`, "utf-8");
     const title = html.match(/<h1>(.*?)<\/h1>/)[1];
-    const el = " "
-      .repeat(6)
-      .concat(
-        `<li><a href="/webgpu/pages/${page}/index.html">${title}</a></li>`
-      );
+    const el = " ".repeat(6).concat(`<li><a href="/webgpu/pages/${page}/index.html">${title}</a></li>`);
     list.push(el);
   }
 

@@ -1,11 +1,11 @@
-import { BaseRenderer } from "@shared/base_renderer";
-import { CubeMesh } from "@shared/cube_mesh";
+import { Cube } from "@mesh/cube";
+import { AnimationRenderer } from "@shared/animation_renderer";
 import { mat4 } from "gl-matrix";
 import shader from "./shader.wgsl?raw";
 
 export type GuiVar = Pick<Required<GPUPrimitiveState>, "cullMode">;
 
-export class Renderer extends BaseRenderer {
+export class Renderer extends AnimationRenderer {
   private constructor(canvas: HTMLCanvasElement, private guiVar: GuiVar) {
     super(canvas);
   }
@@ -19,7 +19,7 @@ export class Renderer extends BaseRenderer {
   }
 
   protected override initAssets() {
-    this.mesh = new CubeMesh(this.device);
+    this.mesh = new Cube(this.device);
   }
 
   protected override createRenderPipeline() {
@@ -30,14 +30,14 @@ export class Renderer extends BaseRenderer {
       vertex: {
         module,
         entryPoint: "vs",
-        buffers: [this.mesh.vertexBufferLayout],
+        buffers: [this.mesh.vertexBufferLayout]
       },
       fragment: {
         module,
         entryPoint: "fs",
-        targets: [{ format: this.format }],
+        targets: [{ format: this.format }]
       },
-      primitive: { cullMode: this.guiVar.cullMode, frontFace: "cw" },
+      primitive: { cullMode: this.guiVar.cullMode, frontFace: "cw" }
     });
   }
 
@@ -60,12 +60,12 @@ export class Renderer extends BaseRenderer {
 
     const mvpBuffer = this.device.createBuffer({
       size: 4 * 4 * 4,
-      usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+      usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
     });
 
     const uniformBufferGroup = this.device.createBindGroup({
       layout: this.pipeline.getBindGroupLayout(0),
-      entries: [{ binding: 0, resource: { buffer: mvpBuffer } }],
+      entries: [{ binding: 0, resource: { buffer: mvpBuffer } }]
     });
 
     const encoder = this.device.createCommandEncoder();
@@ -75,9 +75,9 @@ export class Renderer extends BaseRenderer {
           clearValue: [0.3, 0.3, 0.3, 1],
           view: this.context.getCurrentTexture().createView(),
           loadOp: "clear",
-          storeOp: "store",
-        },
-      ],
+          storeOp: "store"
+        }
+      ]
     });
 
     this.device.queue.writeBuffer(mvpBuffer, 0, mvpMatrix as Float32Array);

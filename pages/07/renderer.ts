@@ -1,21 +1,21 @@
-import { BaseRenderer } from "@shared/base_renderer";
-import { CubeMesh } from "@shared/cube_mesh";
+import { Cube } from "@mesh/cube";
+import { AnimationRenderer } from "@shared/animation_renderer";
+import { Camera } from "@shared/camera";
+import { random } from "@shared/util";
 import { mat4 } from "gl-matrix";
 import shader from "./shader.wgsl?raw";
 
-export type GuiVar = { camera: XYZ };
-
-export class Renderer extends BaseRenderer {
+export class Renderer extends AnimationRenderer {
   private readonly numCubes = 500;
   private randomTranslateArray: mat4[];
 
-  private constructor(canvas: HTMLCanvasElement, private guiVar: GuiVar) {
+  private constructor(canvas: HTMLCanvasElement, public camera: Camera) {
     super(canvas);
     this.randomTranslateArray = this.createRandomModelMatrix();
   }
 
-  public static async create(canvas: HTMLCanvasElement, guiVar: GuiVar) {
-    const renderer = new Renderer(canvas, guiVar);
+  public static async create(canvas: HTMLCanvasElement, camera: Camera) {
+    const renderer = new Renderer(canvas, camera);
     if (!(await renderer.initializeWebGPU())) {
       return null;
     }
@@ -23,7 +23,7 @@ export class Renderer extends BaseRenderer {
   }
 
   protected override initAssets() {
-    this.mesh = new CubeMesh(this.device);
+    this.mesh = new Cube(this.device);
   }
 
   protected override createRenderPipeline() {
@@ -34,14 +34,14 @@ export class Renderer extends BaseRenderer {
       vertex: {
         module,
         entryPoint: "vs",
-        buffers: [this.mesh.vertexBufferLayout],
+        buffers: [this.mesh.vertexBufferLayout]
       },
       fragment: {
         module,
         entryPoint: "fs",
-        targets: [{ format: this.format }],
+        targets: [{ format: this.format }]
       },
-      primitive: { cullMode: "back", frontFace: "cw" },
+      primitive: { cullMode: "back", frontFace: "cw" }
     });
   }
 
@@ -50,34 +50,16 @@ export class Renderer extends BaseRenderer {
 
     const mvpBuffer = this.device.createBuffer({
       size: mvpMatrixData.byteLength,
-      usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+      usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
     });
 
     for (let i = 0; i < this.numCubes; i++) {
       const mvpMatrix = mat4.create();
 
-      const modelMatrix = mat4.create();
-      const viewMatrix = mat4.create();
-      const projectionMatrix = mat4.create();
+      const modelMatrix = this.randomTranslateArray[i];
+      const viewMatrix = this.camera.getViewMatrix();
+      const projectionMatrix = this.camera.getProjectionMatrix();
 
-      mat4.rotateX(modelMatrix, this.randomTranslateArray[i], this.time);
-      mat4.rotateY(modelMatrix, modelMatrix, this.time);
-      mat4.rotateZ(modelMatrix, modelMatrix, this.time);
-      mat4.scale(modelMatrix, modelMatrix, [0.3, 0.3, 0.3]);
-
-      mat4.lookAt(
-        viewMatrix,
-        [this.guiVar.camera.x, this.guiVar.camera.y, this.guiVar.camera.z],
-        [0, 0, 0],
-        [0, 1, 0]
-      );
-      mat4.perspective(
-        projectionMatrix,
-        Math.PI / 4,
-        this.canvas.width / this.canvas.height,
-        0,
-        100
-      );
       mat4.multiply(projectionMatrix, projectionMatrix, viewMatrix);
       mat4.multiply(mvpMatrix, projectionMatrix, modelMatrix);
 
@@ -88,7 +70,7 @@ export class Renderer extends BaseRenderer {
 
     const uniformBufferGroup = this.device.createBindGroup({
       layout: this.pipeline.getBindGroupLayout(0),
-      entries: [{ binding: 0, resource: { buffer: mvpBuffer } }],
+      entries: [{ binding: 0, resource: { buffer: mvpBuffer } }]
     });
 
     const encoder = this.device.createCommandEncoder();
@@ -98,9 +80,9 @@ export class Renderer extends BaseRenderer {
           clearValue: [0.3, 0.3, 0.3, 1],
           view: this.context.getCurrentTexture().createView(),
           loadOp: "clear",
-          storeOp: "store",
-        },
-      ],
+          storeOp: "store"
+        }
+      ]
     });
 
     pass.setPipeline(this.pipeline);
@@ -119,13 +101,7 @@ export class Renderer extends BaseRenderer {
 
     for (let i = 0; i < this.numCubes; i++) {
       const modelMatrix = mat4.create();
-
-      mat4.translate(modelMatrix, modelMatrix, [
-        Math.random() * 2 - 1,
-        Math.random() * 2 - 1,
-        Math.random() * 2 - 1,
-      ]);
-
+      mat4.translate(modelMatrix, modelMatrix, [random(-4, 4), random(-4, 4), random(-4, 4)]);
       result.push(modelMatrix);
     }
 

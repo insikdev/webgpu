@@ -19,7 +19,7 @@
     "noFallthroughCasesInSwitch": true,
 
     "typeRoots": ["./node_modules/@webgpu/types", "./node_modules/@types"],
-    "paths": { "@shared/*": ["./src/shared/*"] }
+    "paths": { "@shared/*": ["./src/shared/*"], "@mesh/*": ["./src/mesh/*"] }
   },
   "include": ["src", "pages"]
 }

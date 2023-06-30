@@ -1,8 +1,8 @@
-import { BaseRenderer } from "@shared/base_renderer";
-import { TriangleMesh } from "@shared/triangle_mesh";
+import { Triangle } from "@mesh/triangle";
+import { AnimationRenderer } from "@shared/animation_renderer";
 import shader from "./shader.wgsl?raw";
 
-export class Renderer extends BaseRenderer {
+export class Renderer extends AnimationRenderer {
   private constructor(canvas: HTMLCanvasElement) {
     super(canvas);
   }
@@ -16,7 +16,7 @@ export class Renderer extends BaseRenderer {
   }
 
   protected override initAssets() {
-    this.mesh = new TriangleMesh(this.device);
+    this.mesh = new Triangle(this.device);
   }
 
   protected override createRenderPipeline() {
@@ -27,13 +27,13 @@ export class Renderer extends BaseRenderer {
       vertex: {
         module,
         entryPoint: "vs",
-        buffers: [this.mesh.vertexBufferLayout],
+        buffers: [this.mesh.vertexBufferLayout]
       },
       fragment: {
         module,
         entryPoint: "fs",
-        targets: [{ format: this.format }],
-      },
+        targets: [{ format: this.format }]
+      }
     });
   }
 
@@ -45,9 +45,9 @@ export class Renderer extends BaseRenderer {
           clearValue: [0.3, 0.3, 0.3, 1],
           view: this.context.getCurrentTexture().createView(),
           loadOp: "clear",
-          storeOp: "store",
-        },
-      ],
+          storeOp: "store"
+        }
+      ]
     });
 
     pass.setPipeline(this.pipeline);

@@ -1,10 +1,10 @@
-import { BaseRenderer } from "@shared/base_renderer";
+import { Triangle } from "@mesh/triangle";
+import { AnimationRenderer } from "@shared/animation_renderer";
 import { Texture } from "@shared/texture";
-import { TriangleMesh } from "@shared/triangle_mesh";
 import shader from "./shader.wgsl?raw";
 import imgUrl from "/sample.jpg";
 
-export class Renderer extends BaseRenderer {
+export class Renderer extends AnimationRenderer {
   private constructor(canvas: HTMLCanvasElement) {
     super(canvas);
   }
@@ -18,7 +18,7 @@ export class Renderer extends BaseRenderer {
   }
 
   protected override async initAssets(): Promise<void> {
-    this.mesh = new TriangleMesh(this.device);
+    this.mesh = new Triangle(this.device);
 
     this.texture = new Texture(this.device);
     await this.texture.loadImage(imgUrl);
@@ -32,13 +32,13 @@ export class Renderer extends BaseRenderer {
       vertex: {
         module,
         entryPoint: "vs",
-        buffers: [this.mesh.vertexBufferLayout],
+        buffers: [this.mesh.vertexBufferLayout]
       },
       fragment: {
         module,
         entryPoint: "fs",
-        targets: [{ format: this.format }],
-      },
+        targets: [{ format: this.format }]
+      }
     });
   }
 
@@ -47,8 +47,8 @@ export class Renderer extends BaseRenderer {
       layout: this.pipeline.getBindGroupLayout(0),
       entries: [
         { binding: 0, resource: this.texture!.sampler },
-        { binding: 1, resource: this.texture!.view },
-      ],
+        { binding: 1, resource: this.texture!.view }
+      ]
     });
 
     const encoder = this.device.createCommandEncoder();
@@ -58,9 +58,9 @@ export class Renderer extends BaseRenderer {
           clearValue: [0.3, 0.3, 0.3, 1],
           view: this.context.getCurrentTexture().createView(),
           loadOp: "clear",
-          storeOp: "store",
-        },
-      ],
+          storeOp: "store"
+        }
+      ]
     });
 
     pass.setPipeline(this.pipeline);

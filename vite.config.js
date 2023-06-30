@@ -17,7 +17,9 @@ export default defineConfig({
   base: "/webgpu/",
   build: {
     rollupOptions: { input: await createInputOptions() },
-    target: "esnext",
+    target: "esnext"
   },
-  resolve: { alias: { "@shared": path.resolve(__dirname, "src/shared") } },
+  resolve: {
+    alias: { "@shared": path.resolve(__dirname, "src/shared"), "@mesh": path.resolve(__dirname, "src/mesh") }
+  }
 });

@@ -1,6 +1,6 @@
 import { WebGPUManager } from "./webgpu_manger";
 
-export abstract class BaseRenderer extends WebGPUManager {
+export abstract class AnimationRenderer extends WebGPUManager {
   protected time: number = 0;
   private animationFrameId?: number;
   private lastFrameTimestamp?: number;
